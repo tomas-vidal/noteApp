@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using noteApp.backend.Models;
-using System.Configuration;
 
 namespace noteApp.backend.Helpers
 {

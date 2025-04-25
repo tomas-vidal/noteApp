@@ -14,20 +14,27 @@ namespace noteApp.backend.Controllers
     {
         private readonly JwtServices _jwtServices;
         private readonly INoteRepository _noteRepository;
-        public NoteController(JwtServices jwtServices, INoteRepository noteRepository)
+        private readonly CohereServices _cohereServices;
+        public NoteController(JwtServices jwtServices, INoteRepository noteRepository, CohereServices cohereServices)
         {
             _jwtServices = jwtServices;
             _noteRepository = noteRepository;
+            _cohereServices = cohereServices;
         }
 
         [HttpPost]
-        public IActionResult CreateNote(NoteDto dto)
+        public async Task<IActionResult> CreateNote(NoteDto dto)
         {
             var jwt = Request.Cookies["jwt"];
             var token = _jwtServices.Verify(jwt);
-            Guid id = Guid.Parse(token.FindFirst("Id").Value);
+            Guid id = Guid.Parse(token.FindFirst("Id").Value);           
 
-            Note note = new() { Title = dto.Title, Content = dto.Content, UserId = id };
+            string analyze = dto.Title + " " + dto.Content;
+            CohereServices.CohereApiResponse test = await _cohereServices.GetChatResponseAsync(analyze);
+            string tag = test.classifications[0].prediction;
+
+            Note note = new() { Title = dto.Title, Content = dto.Content, UserId = id, Tag = tag };
+
             _noteRepository.Create(note);
             return Ok("created");
         }
@@ -42,7 +49,7 @@ namespace noteApp.backend.Controllers
                 var token = _jwtServices.Verify(jwt);
                 Guid id = Guid.Parse(token.FindFirst("Id").Value);
 
-                ICollection<Note> notes = _noteRepository.GetByUserId(id);
+                ICollection<Note>? notes = _noteRepository.GetByUserId(id);
 
                 return Ok(notes);
             }
@@ -54,7 +61,7 @@ namespace noteApp.backend.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateNote(NoteDto dto)
+        public async Task<IActionResult> UpdateNote(NoteDto dto)
         {
             var jwt = Request.Cookies["jwt"];
             var token = _jwtServices.Verify(jwt);
@@ -65,7 +72,12 @@ namespace noteApp.backend.Controllers
             if (noteToUpdate == null) return BadRequest();
             if (noteToUpdate.UserId != id) return Unauthorized();
 
-            _noteRepository.Update(noteToUpdate.Id, dto.Title, dto.Content);
+            string analyze = dto.Title + " " + dto.Content;
+            CohereServices.CohereApiResponse test = await _cohereServices.GetChatResponseAsync(analyze);
+            string tag = test.classifications[0].prediction;
+
+            _noteRepository.Update(noteToUpdate.Id, dto.Title, dto.Content, tag);
+
             return Ok("updated");
         }
 
@@ -82,6 +94,8 @@ namespace noteApp.backend.Controllers
             if (noteToDelete.UserId != Id) return Unauthorized();
 
             _noteRepository.Delete(noteToDelete.Id);
+
+
             return Ok("deleted");
         }
 

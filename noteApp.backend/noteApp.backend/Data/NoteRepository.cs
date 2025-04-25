@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using noteApp.backend.Helpers;
 using noteApp.backend.Models;
 
 namespace noteApp.backend.Data
@@ -15,14 +16,17 @@ namespace noteApp.backend.Data
         public void Create(Note note)
         {
             _noteContext.Notes.Add(note);
+
             _noteContext.SaveChanges();
         }
 
-        public void Update(int id, string title, string content)
+        public void Update(int id, string title, string content, string tag)
         {
             Note note = _noteContext.Notes.First(note => note.Id == id);
             note.Title = title;
             note.Content = content;
+            note.Tag = tag;
+
             _noteContext.SaveChanges();
         }
         public void Delete(int noteId)

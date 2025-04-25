@@ -25,6 +25,9 @@ namespace noteApp.backend.Controllers
             if (dto.Email == null) return BadRequest();
             User user = new() { Email = dto.Email, Username = dto.Username, Password = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password) };
             _userRepository.Create(user);
+                
+            Login(dto);
+
             return Ok("registered");
         }
 
