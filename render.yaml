@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: noteapp-backend
+    env: docker
+    dockerfilePath: ./noteApp.backend/Dockerfile
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Development
+    ports:
+      - 8080
+    dependsOn:
+      - mssqlserver
+
+  - type: private-service
+    name: mssqlserver
+    env: docker
+    image: mcr.microsoft.com/mssql/server:latest
+    envVars:
+      - key: SA_PASSWORD
+        value: StrongPassword12345!
+      - key: ACCEPT_EULA
+        value: Y
+    ports:
+      - 1433
+    disk:
+      name: sqlvolume
+      mountPath: /var/opt/mssql
