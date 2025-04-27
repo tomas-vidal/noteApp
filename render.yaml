@@ -13,7 +13,7 @@ services:
     dependsOn:
       - mssqlserver
 
-  - type: private-service
+  - type: web
     name: mssqlserver
     env: docker
     image: mcr.microsoft.com/mssql/server:latest
